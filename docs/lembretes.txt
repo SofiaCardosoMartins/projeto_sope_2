@@ -1,0 +1,1 @@
+->Alterámos o start do prof: copiámos as definições das macros para macros.h -> indicar no relatório
