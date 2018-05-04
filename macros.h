@@ -2,8 +2,6 @@
 // (or define it through command line/Makefile)
 //#define ADDITIONAL_CHECK
 
-
-
 #define MAX_ROOM_SEATS 9999             /* maximum number of room seats/tickets available       */
 #define MAX_CLI_SEATS 99                /* maximum number of seats/tickets per request          */
 #define WIDTH_PID 5                     /* length of the PID string                             */
