@@ -1,5 +1,6 @@
+#include "client.h"
+#include "macros.h"
 #include <stdio.h>
-
 #include <sys/types.h>
 #include <unistd.h>
 
