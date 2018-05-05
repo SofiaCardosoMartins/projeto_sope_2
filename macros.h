@@ -7,6 +7,7 @@
 #define WIDTH_PID 5                     /* length of the PID string                             */
 #define WIDTH_XXNN 5                    /* length of the XX.NN string (reservation X out of N)  */
 #define WIDTH_SEAT 4                    /* length of the seat number id string                  */
+#define WIDTH_ERROR 3                   /* length of the errors in the clog.txt file -MAX,NST...*/
 
 // maximum length of the preference list string (the +1 is for the space character)
 #define MAX_PREFERENCES_LEN ((WIDTH_SEAT+1)*(MAX_CLI_SEATS))
@@ -29,3 +30,7 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_WHITE   "\x1b[37m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+
+typedef int bool;
+#define true 1
+#define false 0
