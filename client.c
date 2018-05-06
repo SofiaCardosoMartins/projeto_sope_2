@@ -32,14 +32,14 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 
   //1. Write pid
   pid_t clientPid = getpid();
-  char *pidString = (char *)(malloc(sizeof(char) * (2 + WIDTH_PID)));
-  char format[] = {'%', '0', WIDTH_PID, 'd', ' '};
-  sprintf(pidString, "%05d ", clientPid);
+  char *pidString = (char *)(malloc(sizeof(char) * (1 + WIDTH_PID)));
+  const char format[] =  {'%', '0', WIDTH_PID + '0', 'd', ' '};
+  sprintf(pidString, format, clientPid);
 
   if (timeout)
   {
-    write(fd_clog, pidString, sizeof(pidString));
-    write(fd_clog, "OUT\n", sizeof("OUT\n"));
+    write(fd_clog, pidString, sizeof(char) * strlen(pidString));
+    write(fd_clog, "OUT\n", sizeof(char) * strlen("OUT\n"));
   }
   else if (answer->state == 0) //successful reservation
   {
@@ -54,7 +54,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
     //3. Write reserved seats
     char *seatNumber = (char *)(malloc(sizeof(char) * (1 + 1 + WIDTH_XXNN))); //XX.NN , +1 for ' ' and '\0'
     char *seatPlace = (char *)(malloc(sizeof(char) * (1 + WIDTH_SEAT)));      //seat number
-    char formatSeat[] = {'%', '0', WIDTH_SEAT, 'd', ' '};
+    char formatSeat[] = {'%', '0', WIDTH_SEAT + '0', 'd', ' '};
     for (int i = 1; i <= number_seats; i++)
     {
       if (i < 10)
@@ -62,7 +62,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
       else
         sprintf(seatNumber, "%d.%s ", i, number_seats_string);
 
-      sprintf(seatPlace, "%04d", answer->seats[i]);
+      sprintf(seatPlace, formatSeat, answer->seats[i]);
       write(fd_clog, seatNumber, sizeof(seatNumber));
       write(fd_clog, seatPlace, sizeof(seatPlace));
       write(fd_clog, "\n", sizeof("\n"));
