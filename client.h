@@ -19,4 +19,3 @@ struct server_answer {
 void write_to_clog_cbook(struct server_answer* answer, bool timeout);
 void timeout_handler();
 void arrayChar_to_arrayInt(char* arrayChar,int* arrayInt);
-int main(int argc, char *argv[]);
