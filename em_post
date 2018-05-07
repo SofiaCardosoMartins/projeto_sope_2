@@ -1,0 +1,56 @@
+SEM_GETVALUE(3)            Linux Programmer's Manual           SEM_GETVALUE(3)
+
+NNAAMMEE
+       sem_getvalue - get the value of a semaphore
+
+SSYYNNOOPPSSIISS
+       ##iinncclluuddee <<sseemmaapphhoorree..hh>>
+
+       iinntt sseemm__ggeettvvaalluuee((sseemm__tt **_s_e_m,, iinntt **_s_v_a_l));;
+
+       Link with _-_p_t_h_r_e_a_d.
+
+DDEESSCCRRIIPPTTIIOONN
+       sseemm__ggeettvvaalluuee() places the current value of the semaphore pointed to _s_e_m
+       into the integer pointed to by _s_v_a_l.
+
+       If one or more processes or threads are blocked  waiting  to  lock  the
+       semaphore  with  sseemm__wwaaiitt(3), POSIX.1 permits two possibilities for the
+       value returned in _s_v_a_l: either 0 is  returned;  or  a  negative  number
+       whose  absolute  value  is  the  count  of  the number of processes and
+       threads currently blocked in  sseemm__wwaaiitt(3).   Linux  adopts  the  former
+       behavior.
+
+RREETTUURRNN VVAALLUUEE
+       sseemm__ggeettvvaalluuee() returns 0 on success; on error, -1 is returned and _e_r_r_n_o
+       is set to indicate the error.
+
+EERRRROORRSS
+       EEIINNVVAALL _s_e_m is not a valid semaphore.
+
+AATTTTRRIIBBUUTTEESS
+       For  an  explanation  of  the  terms  used   in   this   section,   see
+       aattttrriibbuutteess(7).
+
+       ┌───────────────┬───────────────┬─────────┐
+       │IInntteerrffaaccee      │ AAttttrriibbuuttee     │ VVaalluuee   │
+       ├───────────────┼───────────────┼─────────┤
+       │sseemm__ggeettvvaalluuee() │ Thread safety │ MT-Safe │
+       └───────────────┴───────────────┴─────────┘
+CCOONNFFOORRMMIINNGG TTOO
+       POSIX.1-2001, POSIX.1-2008.
+
+NNOOTTEESS
+       The  value  of  the  semaphore  may  already  have  changed by the time
+       sseemm__ggeettvvaalluuee() returns.
+
+SSEEEE AALLSSOO
+       sseemm__ppoosstt(3), sseemm__wwaaiitt(3), sseemm__oovveerrvviieeww(7)
+
+CCOOLLOOPPHHOONN
+       This page is part of release 4.04 of the Linux  _m_a_n_-_p_a_g_e_s  project.   A
+       description  of  the project, information about reporting bugs, and the
+       latest    version    of    this    page,    can     be     found     at
+       http://www.kernel.org/doc/man-pages/.
+
+Linux                             2015-08-08                   SEM_GETVALUE(3)

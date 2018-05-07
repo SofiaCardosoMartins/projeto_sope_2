@@ -1,10 +1,4 @@
 #include "client.h"
-#include "macros.h"
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 //Exit values:
 //0 - ok
@@ -144,7 +138,7 @@ void arrayChar_to_arrayInt(char *arrayChar, int *arrayInt)
 
 int main(int argc, char *argv[])
 {
-  answerFifoName = (char *)(malloc(sizeof(char) * WIDTH_PID));
+  answerFifoName = (char *)(malloc(sizeof(char) * (WIDTH_PID+3)));
   int fd_req;
   struct server_answer ans;
   int timeout = atoi(argv[1]);
