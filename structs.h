@@ -1,4 +1,10 @@
 #include "macros.h"
+#include <sys/types.h>
+
+const char pidFormat[] = {'%', '0', WIDTH_PID+ '0', 'd', ' ', 0};
+const char answerFifoFormat[] = {'a', 'n', 's', '%', '0', WIDTH_PID+ '0', 'd', 0};
+const char seatFormat[] = {'%', '0', WIDTH_SEAT + '0', 'd', ' ', 0};
+const char ticketOfficeNumFormat = {'%', '0', WIDTH_TICKET_OFFICE + '0', 'd', '-', 0};
 
 struct client_request {                  // delay in microseconds
   int client_pid;                        // client's process id

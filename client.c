@@ -11,8 +11,8 @@ int fd_ans;
 
 void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 {
-  int fd_clog = open("clog.txt", O_WRONLY | O_APPEND | O_CREAT, 0660);
-  int fd_cbook = open("cbook.txt", O_WRONLY | O_APPEND | O_CREAT, 0660);
+  int fd_clog = open("clog.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
+  int fd_cbook = open("cbook.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
   if (fd_clog == -1)
   {
     perror("Could not open clog.txt for writing");
@@ -27,8 +27,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
   //1. Write pid
   pid_t clientPid = getpid();
   char *pidString = (char *)(malloc(sizeof(char) * (1 + WIDTH_PID)));
-  const char format[] =  {'%', '0', WIDTH_PID + '0', 'd', ' '};
-  sprintf(pidString, format, clientPid);
+  sprintf(pidString, pidFormat, clientPid);
 
   if (timeout)
   {
@@ -39,7 +38,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
   {
     //2. Write number of reserved seats
     int number_seats = answer->seats[0];
-    char *number_seats_string = (char *)(malloc(sizeof(char) * (2 + 1)));
+    char *number_seats_string = (char *)(malloc(sizeof(char) * (2 + 1))); //1 -> null terminator
     if (number_seats < 10)
       sprintf(number_seats_string, "0%d", number_seats);
     else
@@ -48,7 +47,6 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
     //3. Write reserved seats
     char *seatNumber = (char *)(malloc(sizeof(char) * (1 + 1 + WIDTH_XXNN))); //XX.NN , +1 for ' ' and '\0'
     char *seatPlace = (char *)(malloc(sizeof(char) * (1 + WIDTH_SEAT)));      //seat number
-    char formatSeat[] = {'%', '0', WIDTH_SEAT + '0', 'd', ' '};
     for (int i = 1; i <= number_seats; i++)
     {
       if (i < 10)
@@ -56,7 +54,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
       else
         sprintf(seatNumber, "%d.%s ", i, number_seats_string);
 
-      sprintf(seatPlace, formatSeat, answer->seats[i]);
+      sprintf(seatPlace, seatFormat, answer->seats[i]);
       write(fd_clog, seatNumber, sizeof(seatNumber));
       write(fd_clog, seatPlace, sizeof(seatPlace));
       write(fd_clog, "\n", sizeof("\n"));
@@ -138,7 +136,7 @@ void arrayChar_to_arrayInt(char *arrayChar, int *arrayInt)
 
 int main(int argc, char *argv[])
 {
-  answerFifoName = (char *)(malloc(sizeof(char) * (WIDTH_PID+3)));
+  answerFifoName = (char *)(malloc(sizeof(char) * (WIDTH_PID+3+1))); // 3-> ans + 1 -> null terminator
   int fd_req;
   struct server_answer ans;
   int timeout = atoi(argv[1]);
@@ -152,10 +150,10 @@ int main(int argc, char *argv[])
   memset(rc.preferences, 0, sizeof(rc.preferences));
   arrayChar_to_arrayInt(argv[3], rc.preferences);
 
-  sprintf(answerFifoName, "ans%d", getpid());
+  sprintf(answerFifoName, answerFifoFormat, getpid());
 
   //creating fifo for request answers receiving
-  mkfifo(answerFifoName, 0660);
+  mkfifo(answerFifoName, DEFAULT_PERMISSION);
   fd_ans = open(answerFifoName, O_RDONLY | O_NONBLOCK);
 
   //opening fifo for request sending
