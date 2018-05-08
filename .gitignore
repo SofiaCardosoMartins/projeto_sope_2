@@ -53,3 +53,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Text files
+sbook.txt
+cbook.txt
+slog.txt
+clog.txt
+
