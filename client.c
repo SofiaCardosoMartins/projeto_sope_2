@@ -136,7 +136,7 @@ void arrayChar_to_arrayInt(char *arrayChar, int *arrayInt)
 
 int main(int argc, char *argv[])
 {
-  answerFifoName = (char *)(malloc(sizeof(char) * (WIDTH_PID+3+1))); // 3-> ans + 1 -> null terminator
+  answerFifoName = (char *)(malloc(sizeof(char) * (WIDTH_PID + 3 + 1))); // 3-> ans + 1 -> null terminator
   int fd_req;
   struct server_answer ans;
   int timeout = atoi(argv[1]);
@@ -157,16 +157,16 @@ int main(int argc, char *argv[])
   fd_ans = open(answerFifoName, O_RDONLY | O_NONBLOCK);
 
   //opening fifo for request sending
-  /*
+
   do
   {
     fd_req = open("requests", O_WRONLY);
     if (fd_req == -1)
       sleep(1);
-  } while (fd_req == -1);*/
+  } while (fd_req == -1);
 
-  // write(fd_req, &rc, sizeof(rc));
-  // close(fd_req);
+  write(fd_req, &rc, sizeof(rc));
+  close(fd_req);
 
   //dealing with the timeout
   int rd, timeout_cnt = 0;

@@ -9,6 +9,7 @@
 #define WIDTH_SEAT 4                    /* length of the seat number id string                  */
 #define WIDTH_ERROR 3                   /* length of the errors in the clog.txt file -MAX,NST...*/
 #define WIDTH_TICKET_OFFICE 2           /* length of the ticket office's number string          */
+#define WIDTH_TICKETS_WANTED 2          /* length of the number of tickets wanted by a client   */
 
 // maximum length of the preference list string (the +1 is for the space character)
 #define MAX_PREFERENCES_LEN ((WIDTH_SEAT+1)*(MAX_CLI_SEATS))
