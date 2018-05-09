@@ -1,12 +1,14 @@
 #include "macros.h"
+#include <stdbool.h>
 #include <sys/types.h>
 
-const char pidFormat[] = {'%', '0', WIDTH_PID+ '0', 'd', ' ', '\0'};
-const char answerFifoFormat[] = {'a', 'n', 's', '%', '0', WIDTH_PID+ '0', 'd', '\0'};
-const char seatFormat[] = {'%', '0', WIDTH_SEAT + '0', 'd', ' ', '\0'};
-const char ticketOfficeNumFormat[] = {'%', '0', WIDTH_TICKET_OFFICE + '0', 'd', '-', '\0'};
-const char numTicketsWantedFormat[] = {'%', '0', WIDTH_TICKETS_WANTED + '0', 'd', ':', ' ', '\0'};
-const char ticketsFormat[] = {'%', '0', WIDTH_SEAT + '0', 'd', ' ', '\0'};
+const char* pidFormat = "%0" QUOTE(WIDTH_PID) "d";
+const char* answerFifoFormat = "ans%0" QUOTE(WIDTH_PID) "d";
+const char* seatFormat = "%0" QUOTE(WIDTH_SEAT) "d ";
+const char* ticketOfficeNumFormat = "%0" QUOTE(WIDTH_TICKET_OFFICE) "d-";
+const char* numTicketsWantedFormat = "%0" QUOTE(WIDTH_TICKETS_WANTED) "d: ";
+const char* ticketsFormat = "%0" QUOTE(WIDTH_SEAT) "d ";
+
 struct client_request {                  // delay in microseconds
   int client_pid;                        // client's process id
   int num_wanted_seats;                 // number of seats/tickets wanted
@@ -15,7 +17,13 @@ struct client_request {                  // delay in microseconds
 
 struct server_answer {
   int state;  //0 - ok. !0 - error
-  int * seats;  //number of reserved seats followed by the seats' numbers.
+  int seats[MAX_CLI_SEATS + 1];  //number of reserved seats followed by the seats' numbers.
+};
+
+struct ticket_office
+{
+  pthread_t tid;
+  bool processingRequest;
 };
 
 /**

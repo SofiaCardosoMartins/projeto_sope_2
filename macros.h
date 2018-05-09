@@ -33,6 +33,8 @@
 #define ANSI_COLOR_WHITE   "\x1b[37m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-#define DELAY()    sleep(1)
 
 #define DEFAULT_PERMISSION         S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP   /* User and Group have read and write permissions */
+
+#define DELAY_TIME 1000000  //in ns
+#define DELAY() struct timespec *a = (struct timespec *)malloc(sizeof(struct timespec)); struct timespec *b = (struct timespec *)malloc(sizeof(struct timespec)); a->tv_nsec = DELAY_TIME;a->tv_sec = 0; while (nanosleep(a, b) && errno == EINTR){struct timespec *tmp = a;a = b;b = tmp;}
