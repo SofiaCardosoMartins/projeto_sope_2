@@ -419,10 +419,7 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
 
 char *getSpaceString(int n)
 {
-    char *spaceString = (char *)malloc(sizeof(char) * (1 + n));
-    for (int i = 0; i < n; i++)
-    {
-        sprintf(spaceString, " ");
-    }
+    char *spaceString = (char *)malloc(sizeof(char) * n);
+    memset(spaceString, ' ', n);
     return spaceString;
 }
