@@ -58,5 +58,8 @@ dkms.conf
 sbook.txt
 cbook.txt
 slog.txt
-clog.txt
+clog.txt 
+
+#visual studio code files
+launch.json
 

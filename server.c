@@ -202,7 +202,6 @@ void processRequest(int fd_slog, struct client_request *cr)
             ans.state = 0;
             memset(ans.seats, 0, sizeof(ans.seats));
             ans.seats[0] = numReservedSeats;
-            printf("numero de lugares reservados: %d\n", numReservedSeats);
             for (int i = 1; i <= numReservedSeats; i++)
             {
                 ans.seats[i] = reservedSeats[i - 1].num;
@@ -232,8 +231,10 @@ void processRequest(int fd_slog, struct client_request *cr)
     }
 }
 
-void sigint_handler(int errno)
+void sigint_handler(int signo)
 {
+    if (signo != SIGINT)
+        return;
     close(fd_req);      //close the fifo
     unlink("requests"); //delete the fifo
     exit(0);
@@ -257,9 +258,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
     num_room_seats = atoi(argv[1]);
-    if(num_room_seats > MAX_ROOM_SEATS)
+    if (num_room_seats > MAX_ROOM_SEATS)
     {
-        printf("--> The number of seats in the room cannot be higher than %d\n",MAX_ROOM_SEATS);
+        printf("--> The number of seats in the room cannot be higher than %d\n", MAX_ROOM_SEATS);
         exit(1);
     }
 
@@ -360,7 +361,7 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
         if (cr->preferences[i] != 0)
             sprintf(ticketWanted, ticketsFormat, cr->preferences[i]);
         else
-            ticketWanted = getSpaceString(WIDTH_SEAT + 2); // 1-> space
+            ticketWanted = getSpaceString(WIDTH_SEAT + 1); // 1-> space
 
         write(fd_slog, ticketWanted, strlen(ticketWanted));
         ticketWanted[0] = '\0';

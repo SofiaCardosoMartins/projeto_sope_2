@@ -11,7 +11,6 @@ int fd_ans;
 
 void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 {
-  printf("sou o cliente %d timeout: %d state: %d\n", getpid(), timeout, answer->state);
   int fd_clog = open("clog.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
   int fd_cbook = open("cbook.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
   if (fd_clog == -1)
@@ -41,29 +40,24 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
   {
     //2. Write number of reserved seats
     int number_seats = answer->seats[0];
-
-    char *number_seats_string = (char *)(malloc(sizeof(char) * (2 + 1))); //1 -> null terminator
-    if (number_seats < 10)
-      sprintf(number_seats_string, "0%d", number_seats);
-    else
-      sprintf(number_seats_string, "%d", number_seats);
-
+    int number_seat_width = (WIDTH_XXNN - 1) / 2;
+    char number_seats_format[] = {'%', '0', number_seat_width + '0', 'd'};
+    char *number_seats_string = (char *)(malloc(sizeof(char) * (number_seat_width + 1))); //1 -> null terminator
+    sprintf(number_seats_string, number_seats_format, number_seats);
     //3. Write reserved seats
-    char *seatNumber = (char *)(malloc(sizeof(char) * (1 + 1 + WIDTH_XXNN))); //XX.NN , +1 for ' ' and '\0'
+    char *seatNumber = (char *)(malloc(sizeof(char) * (WIDTH_XXNN + 1 + 1))); //XX.NN , +1 for ' ' and '\0'
     char *seatPlace = (char *)(malloc(sizeof(char) * (1 + WIDTH_SEAT)));      //seat number
+    char reserved_seat_format[] = {'%', '0', number_seat_width + '0', 'd', '.', '%', 's'};
 
     for (int i = 1; i <= number_seats; i++)
     {
       write(fd_clog, pidString, strlen(pidString));
       write(fd_clog, " ", strlen(" "));
-      if (i < 10)
-        sprintf(seatNumber, "0%d.%s ", i, number_seats_string);
-      else
-        sprintf(seatNumber, "%d.%s ", i, number_seats_string);
 
+      sprintf(seatNumber, reserved_seat_format, i, number_seats_string);
       sprintf(seatPlace, seatFormat, answer->seats[i]);
-      printf("\n\nseat number: %s\n\n", seatPlace);
       write(fd_clog, seatNumber, strlen(seatNumber));
+      write(fd_clog, " ", strlen(" "));
       write(fd_clog, seatPlace, strlen(seatPlace));
       write(fd_clog, "\n", strlen("\n"));
       write(fd_cbook, seatPlace, strlen(seatPlace));
@@ -186,8 +180,7 @@ int main(int argc, char *argv[])
     timeout_handler();
 
   write_to_clog_cbook(&ans, false);
-  close(fd_ans);          //close the fifo
-  printf("unlink %d\n",getpid());
+  close(fd_ans); //close the fifo
   unlink(answerFifoName); //delete the fifo
   free(answerFifoName);
 

@@ -27,4 +27,4 @@ int getTicketOfficeNum(pthread_t tid);
 void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_request* cr, struct server_answer sa);
 char *getSpaceString(int n);
 void termHandler(int signo);
-void sigint_handler(int errno);
+void sigint_handler(int signo);
