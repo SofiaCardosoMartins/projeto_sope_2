@@ -73,6 +73,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
       seatPlace[0] = '\0';
     }
     pthread_mutex_unlock(&writeClogMutex);
+    free(pidString);
     free(number_seats_string);
     free(seatNumber);
     free(seatPlace);
