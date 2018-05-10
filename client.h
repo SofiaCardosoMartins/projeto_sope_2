@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 void write_to_clog_cbook(struct server_answer* answer, bool timeout);
 void timeout_handler();

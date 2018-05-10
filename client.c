@@ -8,6 +8,8 @@
 
 char *answerFifoName;
 int fd_ans;
+pthread_mutex_t writeClogMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t writeCbookMutex = PTHREAD_MUTEX_INITIALIZER;
 
 void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 {
@@ -23,6 +25,8 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
     perror("Could not open clog.txt for writing");
     exit(3);
   }
+
+  pthread_mutex_lock(&writeClogMutex);
 
   //1. Write pid
   pid_t clientPid = getpid();
@@ -54,6 +58,7 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
       write(fd_clog, pidString, strlen(pidString));
       write(fd_clog, " ", strlen(" "));
 
+      pthread_mutex_lock(&writeCbookMutex);
       sprintf(seatNumber, reserved_seat_format, i, number_seats_string);
       sprintf(seatPlace, seatFormat, answer->seats[i]);
       write(fd_clog, seatNumber, strlen(seatNumber));
@@ -62,10 +67,12 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
       write(fd_clog, "\n", strlen("\n"));
       write(fd_cbook, seatPlace, strlen(seatPlace));
       write(fd_cbook, "\n", strlen("\n"));
+      pthread_mutex_unlock(&writeCbookMutex);
 
       seatNumber[0] = '\0';
       seatPlace[0] = '\0';
     }
+    pthread_mutex_unlock(&writeClogMutex);
     free(number_seats_string);
     free(seatNumber);
     free(seatPlace);
