@@ -28,3 +28,4 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
 char *getSpaceString(int n);
 void termHandler(int signo);
 void sigint_handler(int signo);
+void destroy_mutexes();

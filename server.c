@@ -12,8 +12,6 @@ bool closeTicketOffices = false;
 pthread_mutex_t *seatMutexes;
 pthread_mutex_t writeSlogMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t writeSbookMutex = PTHREAD_MUTEX_INITIALIZER;
-
-//////////////
 sem_t empty;
 sem_t full;
 
@@ -42,6 +40,16 @@ void termHandler(int signo)
     }
 }
 
+void destroy_mutexes()
+{
+    pthread_mutex_destroy(&buffer_lock);
+    pthread_mutex_destroy(&writeSlogMutex);
+    pthread_mutex_destroy(&writeSbookMutex);
+
+    for (int i = 0; i < num_room_seats; i++)
+        pthread_mutex_destroy(&seatMutexes[i]);
+}
+
 void alarmHandler(int signo)
 {
 
@@ -62,6 +70,9 @@ void alarmHandler(int signo)
     write(fd_slog, "SERVER CLOSED\n", strlen("SERVER CLOSED\n"));
     pthread_mutex_unlock(&writeSlogMutex);
     close(fd_slog);
+    destroy_mutexes();
+    free(threads);
+    free(seatMutexes);
     exit(0);
 }
 
@@ -125,6 +136,8 @@ void *ticketOffice(void *arg)
     write(fd_slog, "CLOSED\n", strlen("CLOSED\n"));
     pthread_mutex_unlock(&writeSlogMutex);
     close(fd_slog);
+    free(cr);
+    free(ticketOfficeNum);
     pthread_exit(NULL);
 }
 
@@ -228,7 +241,9 @@ void processRequest(int fd_slog, struct client_request *cr)
         sprintf(ticketOfficeNum, ticketOfficeNumFormat, officeNum);
 
         writeRequestAnswer(fd_slog, ticketOfficeNum, cr, ans);
+        free(ticketOfficeNum);
     }
+    free(answerFifoName);
 }
 
 void sigint_handler(int signo)
@@ -348,11 +363,13 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
     sprintf(client_pid, pidFormat, cr->client_pid);
     write(fd_slog, client_pid, strlen(client_pid));
     write(fd_slog, "-", strlen("-"));
+    free(client_pid);
 
     //num tickets wanted
     char *numTicketsWanted = malloc(sizeof(char) * (WIDTH_TICKETS_WANTED + 1 + 1 + 1)); //1-> ' ', 1-> ':' , 1-> null terminator
     sprintf(numTicketsWanted, numTicketsWantedFormat, cr->num_wanted_seats);
     write(fd_slog, numTicketsWanted, strlen(numTicketsWanted));
+    free(numTicketsWanted);
 
     //tickets wanted
     char *ticketWanted = malloc(sizeof(char) * (WIDTH_SEAT + 1 + 1)); //1-> ':' , 1-> null terminator
@@ -366,6 +383,7 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
         write(fd_slog, ticketWanted, strlen(ticketWanted));
         ticketWanted[0] = '\0';
     }
+    free(ticketWanted);
 
     //request/answer divisor
     write(fd_slog, "- ", strlen("- "));
@@ -411,6 +429,7 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
             write(fd_sbook, "\n", strlen("\n"));
             ticketReserved[0] = '\0';
         }
+        free(ticketReserved);
     }
     write(fd_slog, "\n", strlen("\n"));
     close(fd_sbook);

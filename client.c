@@ -110,6 +110,8 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
     write(fd_clog, "\n", strlen("\n"));
     free(errorString);
   }
+  pthread_mutex_destroy(&writeCbookMutex);
+  pthread_mutex_destroy(&writeClogMutex);
   free(pidString);
   close(fd_clog);
   close(fd_cbook);
