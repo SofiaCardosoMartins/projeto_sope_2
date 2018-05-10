@@ -5,11 +5,20 @@
 //1 - timeout
 //2 - could not open clog.txt for writing
 //3 - could not open cbook.txt for writing
+//4 - error writing to a file
 
 char *answerFifoName;
 int fd_ans;
 pthread_mutex_t writeClogMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t writeCbookMutex = PTHREAD_MUTEX_INITIALIZER;
+
+void write_to_file(int fd, void* buf, size_t count)
+{
+  if(write(fd,buf,count) == -1){
+    printf("An error ocurred while trying to write to a file\n");
+    exit(4);
+  }
+}
 
 void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 {
@@ -35,10 +44,10 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 
   if (timeout)
   {
-    write(fd_clog, pidString, strlen(pidString));
-    write(fd_clog, " ", strlen(" "));
-    write(fd_clog, pidString, strlen(pidString));
-    write(fd_clog, " OUT\n", strlen(" OUT\n"));
+    write_to_file(fd_clog, pidString, strlen(pidString));
+    write_to_file(fd_clog, " ", strlen(" "));
+    write_to_file(fd_clog, pidString, strlen(pidString));
+    write_to_file(fd_clog, " OUT\n", strlen(" OUT\n"));
   }
   else if (answer->state == 0) //successful reservation
   {
@@ -55,18 +64,18 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 
     for (int i = 1; i <= number_seats; i++)
     {
-      write(fd_clog, pidString, strlen(pidString));
-      write(fd_clog, " ", strlen(" "));
+      write_to_file(fd_clog, pidString, strlen(pidString));
+      write_to_file(fd_clog, " ", strlen(" "));
 
       pthread_mutex_lock(&writeCbookMutex);
       sprintf(seatNumber, reserved_seat_format, i, number_seats_string);
       sprintf(seatPlace, seatFormat, answer->seats[i]);
-      write(fd_clog, seatNumber, strlen(seatNumber));
-      write(fd_clog, " ", strlen(" "));
-      write(fd_clog, seatPlace, strlen(seatPlace));
-      write(fd_clog, "\n", strlen("\n"));
-      write(fd_cbook, seatPlace, strlen(seatPlace));
-      write(fd_cbook, "\n", strlen("\n"));
+      write_to_file(fd_clog, seatNumber, strlen(seatNumber));
+      write_to_file(fd_clog, " ", strlen(" "));
+      write_to_file(fd_clog, seatPlace, strlen(seatPlace));
+      write_to_file(fd_clog, "\n", strlen("\n"));
+      write_to_file(fd_cbook, seatPlace, strlen(seatPlace));
+      write_to_file(fd_cbook, "\n", strlen("\n"));
       pthread_mutex_unlock(&writeCbookMutex);
 
       seatNumber[0] = '\0';
@@ -80,8 +89,8 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
   }
   else
   {
-    write(fd_clog, pidString, strlen(pidString));
-    write(fd_clog, " ", strlen(" "));
+    write_to_file(fd_clog, pidString, strlen(pidString));
+    write_to_file(fd_clog, " ", strlen(" "));
     char *errorString = malloc(sizeof(char) * (1 + WIDTH_ERROR)); //+1 for the '\0'
 
     switch (answer->state)
@@ -107,8 +116,8 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
     default:
       break;
     }
-    write(fd_clog, errorString, strlen(errorString));
-    write(fd_clog, "\n", strlen("\n"));
+    write_to_file(fd_clog, errorString, strlen(errorString));
+    write_to_file(fd_clog, "\n", strlen("\n"));
     free(errorString);
   }
   pthread_mutex_destroy(&writeCbookMutex);
@@ -174,7 +183,7 @@ int main(int argc, char *argv[])
       sleep(1);
   } while (fd_req == -1);
 
-  write(fd_req, &rc, sizeof(rc));
+  write_to_file(fd_req, &rc, sizeof(rc));
   close(fd_req);
 
   //dealing with the timeout

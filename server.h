@@ -15,6 +15,7 @@
 
 #define SHARED 0 /* sem. is shared between threads */
 
+void write_to_file(int fd, void* buf, size_t count);
 void intdup(int const *src, int *dest, size_t size);
 void *ticketOffice(void *arg);
 void processRequest(int fd_slog, struct client_request* cr);

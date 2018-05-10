@@ -15,6 +15,15 @@ pthread_mutex_t writeSbookMutex = PTHREAD_MUTEX_INITIALIZER;
 sem_t empty;
 sem_t full;
 
+void write_to_file(int fd, void *buf, size_t count)
+{
+    if (write(fd, buf, count) == -1)
+    {
+        printf("An error ocurred while trying to write to a file\n");
+        exit(1);
+    }
+}
+
 void termHandler(int signo)
 {
     if (signo != SIGTERM)
@@ -28,11 +37,16 @@ void termHandler(int signo)
     else
     {
         int fd_slog = open("slog.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
+        if (fd_slog == -1)
+        {
+            printf("Could not open the slog.txt file\n");
+            exit(1);
+        }
         char *ticketOfficeNum = (char *)malloc(sizeof(char) * (WIDTH_TICKET_OFFICE + 1 + 1)); //1-> '-' + 1-> null terminator
         sprintf(ticketOfficeNum, ticketOfficeNumFormat, officeNum);
         pthread_mutex_lock(&writeSlogMutex);
-        write(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
-        write(fd_slog, "CLOSED\n", strlen("CLOSED\n"));
+        write_to_file(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
+        write_to_file(fd_slog, "CLOSED\n", strlen("CLOSED\n"));
         pthread_mutex_unlock(&writeSlogMutex);
 
         close(fd_slog);
@@ -66,8 +80,13 @@ void alarmHandler(int signo)
         pthread_join(threads[i].tid, NULL);
 
     int fd_slog = open("slog.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
+    if (fd_slog == -1)
+    {
+        printf("Could not open the slog.txt file\n");
+        exit(1);
+    }
     pthread_mutex_lock(&writeSlogMutex);
-    write(fd_slog, "SERVER CLOSED\n", strlen("SERVER CLOSED\n"));
+    write_to_file(fd_slog, "SERVER CLOSED\n", strlen("SERVER CLOSED\n"));
     pthread_mutex_unlock(&writeSlogMutex);
     close(fd_slog);
     destroy_mutexes();
@@ -109,14 +128,19 @@ void *ticketOffice(void *arg)
     struct client_request *cr = (struct client_request *)malloc(sizeof(struct client_request));
     int *officeNum = (int *)arg;
     int fd_slog = open("slog.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
+    if (fd_slog == -1)
+    {
+        printf("Could not open the slog.txt file\n");
+        exit(1);
+    }
 
     char *ticketOfficeNum = (char *)(malloc(sizeof(char) * (WIDTH_TICKET_OFFICE + 1 + 1))); //1-> '-' + 1-> null terminator
     sprintf(ticketOfficeNum, ticketOfficeNumFormat, *officeNum);
 
     //Writting open state to file
     pthread_mutex_lock(&writeSlogMutex);
-    write(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
-    write(fd_slog, "OPEN\n", strlen("OPEN\n"));
+    write_to_file(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
+    write_to_file(fd_slog, "OPEN\n", strlen("OPEN\n"));
     pthread_mutex_unlock(&writeSlogMutex);
 
     while (!closeTicketOffices)
@@ -132,8 +156,8 @@ void *ticketOffice(void *arg)
 
     //Writting closed state to file
     pthread_mutex_lock(&writeSlogMutex);
-    write(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
-    write(fd_slog, "CLOSED\n", strlen("CLOSED\n"));
+    write_to_file(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
+    write_to_file(fd_slog, "CLOSED\n", strlen("CLOSED\n"));
     pthread_mutex_unlock(&writeSlogMutex);
     close(fd_slog);
     free(cr);
@@ -147,7 +171,7 @@ void processRequest(int fd_slog, struct client_request *cr)
     cr->num_wanted_seats = buffer.num_wanted_seats;
     intdup(buffer.preferences, cr->preferences, sizeof(buffer.preferences));
 
-   // printf("---> thread %d recebeu pid %d\n", getTicketOfficeNum(pthread_self()), cr->client_pid);
+    // printf("---> thread %d recebeu pid %d\n", getTicketOfficeNum(pthread_self()), cr->client_pid);
     sem_post(&empty);
 
     pthread_mutex_unlock(&buffer_lock);
@@ -234,7 +258,7 @@ void processRequest(int fd_slog, struct client_request *cr)
     }
     else
     {
-        write(fd_ans, &ans, sizeof(ans));
+        write_to_file(fd_ans, &ans, sizeof(ans));
 
         int officeNum = getTicketOfficeNum(pthread_self());
         char *ticketOfficeNum = (char *)malloc(sizeof(char) * (WIDTH_TICKET_OFFICE + 1 + 1)); //1-> '-' + 1-> null terminator
@@ -314,6 +338,11 @@ int main(int argc, char *argv[])
 
     mkfifo("requests", 0660);
     fd_req = open("requests", O_RDONLY);
+    if (fd_req == -1)
+    {
+        printf("Could not open the requests fifo\n");
+        exit(1);
+    }
 
     //Initializing semaphore
     sem_init(&requestOnWait, SHARED, 0);
@@ -354,21 +383,26 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
     pthread_mutex_lock(&writeSlogMutex);
     pthread_mutex_lock(&writeSbookMutex);
     int fd_sbook = open("sbook.txt", O_WRONLY | O_APPEND | O_CREAT, DEFAULT_PERMISSION);
+    if (fd_sbook == -1)
+    {
+        printf("Could not open the sbook.txt file\n");
+        exit(1);
+    }
 
     //ticket office num
-    write(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
+    write_to_file(fd_slog, ticketOfficeNum, strlen(ticketOfficeNum));
 
     //client pid
     char *client_pid = (char *)malloc(sizeof(char) * (WIDTH_PID + 1));
     sprintf(client_pid, pidFormat, cr->client_pid);
-    write(fd_slog, client_pid, strlen(client_pid));
-    write(fd_slog, "-", strlen("-"));
+    write_to_file(fd_slog, client_pid, strlen(client_pid));
+    write_to_file(fd_slog, "-", strlen("-"));
     free(client_pid);
 
     //num tickets wanted
     char *numTicketsWanted = malloc(sizeof(char) * (WIDTH_TICKETS_WANTED + 1 + 1 + 1)); //1-> ' ', 1-> ':' , 1-> null terminator
     sprintf(numTicketsWanted, numTicketsWantedFormat, cr->num_wanted_seats);
-    write(fd_slog, numTicketsWanted, strlen(numTicketsWanted));
+    write_to_file(fd_slog, numTicketsWanted, strlen(numTicketsWanted));
     free(numTicketsWanted);
 
     //tickets wanted
@@ -380,35 +414,35 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
         else
             ticketWanted = getSpaceString(WIDTH_SEAT + 1); // 1-> space
 
-        write(fd_slog, ticketWanted, strlen(ticketWanted));
+        write_to_file(fd_slog, ticketWanted, strlen(ticketWanted));
         ticketWanted[0] = '\0';
     }
     free(ticketWanted);
 
     //request/answer divisor
-    write(fd_slog, "- ", strlen("- "));
+    write_to_file(fd_slog, "- ", strlen("- "));
 
     if (sa.state < 0) //request was not successful
     {
         switch (sa.state)
         {
         case -1:
-            write(fd_slog, "MAX", strlen("MAX"));
+            write_to_file(fd_slog, "MAX", strlen("MAX"));
             break;
         case -2:
-            write(fd_slog, "NST", strlen("NST"));
+            write_to_file(fd_slog, "NST", strlen("NST"));
             break;
         case -3:
-            write(fd_slog, "IID", strlen("IID"));
+            write_to_file(fd_slog, "IID", strlen("IID"));
             break;
         case -4:
-            write(fd_slog, "ERR", strlen("ERR"));
+            write_to_file(fd_slog, "ERR", strlen("ERR"));
             break;
         case -5:
-            write(fd_slog, "NAV", strlen("NAV"));
+            write_to_file(fd_slog, "NAV", strlen("NAV"));
             break;
         case -6:
-            write(fd_slog, "FUL", strlen("FUL"));
+            write_to_file(fd_slog, "FUL", strlen("FUL"));
             break;
         default:
             break;
@@ -424,14 +458,14 @@ void writeRequestAnswer(int fd_slog, char *ticketOfficeNum, struct client_reques
             else
                 break;
 
-            write(fd_slog, ticketReserved, strlen(ticketReserved));
-            write(fd_sbook, ticketReserved, strlen(ticketReserved));
-            write(fd_sbook, "\n", strlen("\n"));
+            write_to_file(fd_slog, ticketReserved, strlen(ticketReserved));
+            write_to_file(fd_sbook, ticketReserved, strlen(ticketReserved));
+            write_to_file(fd_sbook, "\n", strlen("\n"));
             ticketReserved[0] = '\0';
         }
         free(ticketReserved);
     }
-    write(fd_slog, "\n", strlen("\n"));
+    write_to_file(fd_slog, "\n", strlen("\n"));
     close(fd_sbook);
     pthread_mutex_unlock(&writeSbookMutex);
     pthread_mutex_unlock(&writeSlogMutex);
