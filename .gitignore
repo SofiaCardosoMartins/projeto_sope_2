@@ -61,5 +61,6 @@ slog.txt
 clog.txt 
 
 #visual studio code files
+.vscode/
 launch.json
 
