@@ -171,7 +171,6 @@ void processRequest(int fd_slog, struct client_request *cr)
     cr->num_wanted_seats = buffer.num_wanted_seats;
     intdup(buffer.preferences, cr->preferences, sizeof(buffer.preferences));
 
-    // printf("---> thread %d recebeu pid %d\n", getTicketOfficeNum(pthread_self()), cr->client_pid);
     sem_post(&empty);
 
     pthread_mutex_unlock(&buffer_lock);
@@ -249,7 +248,6 @@ void processRequest(int fd_slog, struct client_request *cr)
     fd_ans = open(answerFifoName, O_WRONLY | O_NONBLOCK);
     if (fd_ans == -1) //timeout of client
     {
-        //("sou a thread %d n consegui escrever pid %d\n", getTicketOfficeNum(pthread_self()), cr->client_pid);
         for (int i = 0; i < numReservedSeats; i++)
         {
             freeSeat(seats, reservedSeats[i].num);
@@ -353,10 +351,7 @@ int main(int argc, char *argv[])
         sem_getvalue(&empty, &sval);
 
         if (read(fd_req, &buffer, sizeof(buffer)) != 0)
-        {
-            //printf("---> server: recebi pid %d\n", buffer.client_pid);
             sem_post(&full);
-        }
         else
             sem_post(&empty);
     }

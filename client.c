@@ -131,6 +131,7 @@ void timeout_handler()
 {
   close(fd_ans);          //close the fifo
   unlink(answerFifoName); //delete the fifo
+  free(answerFifoName);
   write_to_clog_cbook(NULL, true);
   exit(1);
 }
@@ -140,7 +141,7 @@ void arrayChar_to_arrayInt(char *arrayChar, int *arrayInt)
   int preferedSeatNumber = 0;
   char preferedSeat[WIDTH_SEAT] = {'\0'};
 
-  for (int i = 0; i <= strlen(arrayChar); i++)
+  for (int i = 0; (i <= strlen(arrayChar)) && (preferedSeatNumber < MAX_CLI_SEATS); i++)
   {
     if ((arrayChar[i] != ' ') && (arrayChar[i] != '\0'))
       sprintf(preferedSeat, "%s%c", preferedSeat, arrayChar[i]);
