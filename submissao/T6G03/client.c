@@ -130,7 +130,6 @@ void write_to_clog_cbook(struct server_answer *answer, bool timeout)
 
 void timeout_handler()
 {
-  printf("no handler\n");
   close(fd_ans);          //close the fifo
   unlink(answerFifoName); //delete the fifo
   free(answerFifoName);
